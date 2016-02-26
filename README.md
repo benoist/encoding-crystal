@@ -6,6 +6,7 @@ Currently implemented is
 
 * Simple8b
 * ZigZag
+* VLQ
 
 Roadmap
 
