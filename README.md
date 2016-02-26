@@ -56,6 +56,43 @@ slice = decoder.read(Slice(UInt64).new(240))
 puts slice.size # => 60 it strips the slice to the available number of integers
 ```
 
+### Benchmarks
+
+Plain decode
+```
+increasing integers = 10_000_000, 00:00:00.1824970
+small integers = 100_000_000, 00:00:02.1267900
+Summary items decoded: 110_000_000
+Summary time: 00:00:02.3099370
+```
+
+Simple8b decode
+```
+increasing integers = 10_000_000, 00:00:00.2196710
+small integers = 100_000_000, 00:00:02.0505300
+Summary items decoded: 110_000_000
+Summary time: 00:00:02.2708750
+```
+
+Plain encode
+
+```
+increasing integers = 76 Mb, 00:00:00.1319200
+small integers = 762 Mb, 00:00:01.2899720
+Summary packed size: 839 Mb
+Summary time: 00:00:01.4224870
+```
+
+Simple8b encode
+```
+increasing integers = 12 Mb, 00:00:00.2550130
+small integers = 28 Mb, 00:00:01.7358000
+Summary packed size: 40 Mb
+Summary time: 00:00:01.9913300
+```
+
+For these use cases about 20x smaller data with a bit of encoding overhead
+
 ## Contributing
 
 1. Fork it ( https://github.com/[your-github-name]/encoding/fork )

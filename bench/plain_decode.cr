@@ -25,5 +25,5 @@ t = Time.now
 test_decode("increasing integers", 10000, Slice(UInt64).new(1000) { |n| n.to_u64 })
 test_decode("small integers", 100000, Slice(UInt64).new(1000) { |n| 2.to_u64 })
 
-puts "Summary unpacked size: #{$summary_umpacked}"
+puts "Summary items decoded: #{$summary_umpacked}"
 puts "Summary time: #{Time.now - t}"
