@@ -8,7 +8,9 @@ Currently implemented is
 
 Roadmap
 
-* ZigZag
+* Delta encoding
+* Run length encoding
+* Dictionary encoding
 
 ## Installation
 
