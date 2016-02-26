@@ -5,6 +5,7 @@ A library for encoding integers
 Currently implemented is
 
 * Simple8b
+* ZigZag
 
 Roadmap
 
