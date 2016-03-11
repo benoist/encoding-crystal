@@ -14,6 +14,10 @@
 # * the bitwidth of each block is stored as a byte
 # * each miniblock is a list of bit packed ints according to the bit width stored at the beginning of the block
 
+require "./vlq"
+require "./zig_zag"
+require "../encoding/bit_packing"
+
 module DeltaEncoding
   class InvalidHeader < Exception
   end
@@ -130,6 +134,12 @@ module DeltaEncoding
         max = @deltas[index * @mini_block_size, @mini_block_size].max
         @bit_widths[index] = DeltaEncoding.bits_required(max)
       end
+    end
+
+    def bytes
+      io = MemoryIO.new
+      to_io(io)
+      io.to_slice
     end
 
     def to_io(io)
