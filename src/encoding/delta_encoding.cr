@@ -15,6 +15,9 @@
 # * each miniblock is a list of bit packed ints according to the bit width stored at the beginning of the block
 
 module DeltaEncoding
+  class InvalidHeader < Exception
+  end
+
   def self.encode_zig_zag_var_int(value)
     VLQ.encode(ZigZag.encode32(value))
   end
@@ -39,29 +42,30 @@ module DeltaEncoding
     getter :first_value
     getter :previous_value
     getter :bit_widths
-    getter :total_value_count
-    getter :delta_values_to_flush
-    getter :min_delta_in_current_block
+    getter :total_count
+    getter :min_delta
     getter :deltas
+    getter :pos
+    getter :blocks_buffer
 
-    def initialize(@block_size = 128, @mini_block_size = 4)
-      @mini_block_size_in_values = @block_size / @mini_block_size
-      @output = MemoryIO.new
-      @bit_widths = Array(UInt8).new
-      @total_value_count = 0
-      @delta_values_to_flush = 0
+    def initialize(@block_size = 128, @mini_blocks = 4)
+      @mini_block_size = @block_size / @mini_blocks
+      @blocks_buffer = MemoryIO.new
+      @bit_widths = Slice(UInt8).new(4, 0_u8)
+      @total_count = 0
 
-      @deltas = Array(Int32).new(128)
-      @mini_block_buffer = MemoryIO.new
+      @deltas = Slice(Int32).new(@block_size, 0)
+      @pos = 0
+
       @first_value = 0
       @previous_value = 0
-      @min_delta_in_current_block = Int32::MAX
+      @min_delta = Int32::MAX
     end
 
     def write_integer(value)
-      @total_value_count += 1
+      @total_count += 1
 
-      if @total_value_count == 1
+      if @total_count == 1
         @first_value = value
         @previous_value = @first_value
         return
@@ -70,64 +74,166 @@ module DeltaEncoding
       delta = value - @previous_value
       @previous_value = value
 
-      @deltas << delta
-      @delta_values_to_flush += 1
+      @deltas[@pos] = delta
+      @pos += 1
 
-      if delta < @min_delta_in_current_block
-        @min_delta_in_current_block = delta
-      end
+      @min_delta = {delta, @min_delta}.min
 
-      if @block_size == @delta_values_to_flush
-        flush
-      end
+      flush if @block_size == @pos
     end
 
     def flush
-      @delta_values_to_flush.times do |i|
-        @deltas[i] = @deltas[i] - @min_delta_in_current_block
+      return if @pos == 0
+
+      @pos.times do |i|
+        @deltas[i] = @deltas[i] - @min_delta
       end
 
       write_min_delta
 
-      mini_blocks_to_flush = mini_block_count_to_flush(@delta_values_to_flush)
+      mini_blocks_to_flush = mini_block_count_to_flush(@pos)
 
       calculate_bit_widths_for_delta_block_buffer(mini_blocks_to_flush)
 
-      @bit_widths.each do |bit_width|
-        @output.write_bytes(bit_width.to_u8, IO::ByteFormat::LittleEndian)
+      mini_blocks_to_flush.times do |index|
+        @blocks_buffer.write_bytes(@bit_widths[index], IO::ByteFormat::LittleEndian)
       end
 
-      mini_blocks_to_flush.times do
-        # puts @deltas[0, 8]
+      mini_blocks_to_flush.times do |index|
+        bit_width = @bit_widths[index]
+        if bit_width > 0
+          packed = BitPacking.pack32values(@deltas[0, 32], bit_width)
+
+          packed.each do |value|
+            @blocks_buffer.write_bytes(value, IO::ByteFormat::LittleEndian)
+          end
+        end
+        @deltas += 32
       end
+
+      @min_delta = Int32::MAX
+      @deltas = Slice(Int32).new(@block_size, 0)
+      @bit_widths = Slice(UInt8).new(4, 0_u8)
+      @pos = 0
     end
 
     def mini_block_count_to_flush(number_count)
-      (number_count / @mini_block_size_in_values.to_f).ceil.to_i
+      (number_count / @mini_block_size.to_f).ceil.to_i
     end
 
     def write_min_delta
-      # puts "min delta = #{@min_delta_in_current_block}"
-      @output.write(DeltaEncoding.encode_zig_zag_var_int(@min_delta_in_current_block))
+      @blocks_buffer.write(DeltaEncoding.encode_zig_zag_var_int(@min_delta))
     end
 
     def calculate_bit_widths_for_delta_block_buffer(mini_blocks_to_flush)
       mini_blocks_to_flush.times do |index|
-        mask = 0
-        mini_start = index * 4
-
-        # The end of current mini block could be the end of current block(deltaValuesToFlush) buffer when data is not aligned to mini block
-        mini_end = {(index + 1) * 4, @delta_values_to_flush}.min
-
-        (mini_start...mini_end).each do |i|
-          mask |= @deltas[i]
-        end
-
-        @bit_widths << DeltaEncoding.bits_required(mask)
+        max = @deltas[index * @mini_block_size, @mini_block_size].max
+        @bit_widths[index] = DeltaEncoding.bits_required(max)
       end
+    end
+
+    def to_io(io)
+      io.write(VLQ.encode(@block_size))
+      io.write(VLQ.encode(@mini_blocks))
+      io.write(VLQ.encode(@total_count))
+      io.write(DeltaEncoding.encode_zig_zag_var_int(@first_value))
+
+      @blocks_buffer.rewind
+      IO.copy(@blocks_buffer, io)
     end
   end
 
   class Decoder
+    getter :block_size
+    getter :mini_blocks
+    getter :first_value
+    getter :previous_value
+    getter :bit_widths
+    getter :total_count
+    getter :min_delta
+    getter :deltas
+    getter :pos
+
+    def initialize(@io)
+      @block_size = VLQ.decode(@io).to_i
+      @mini_blocks = VLQ.decode(@io).to_i
+
+      if @block_size == 0 || @mini_blocks == 0 || @block_size / @mini_blocks != 32
+        raise InvalidHeader.new("Invalid header #{@block_size} #{@mini_blocks}")
+      end
+
+      @total_count = VLQ.decode(@io).to_i
+      @values_read = 0
+      @first_value = DeltaEncoding.decode_zig_zag_var_int(@io).to_i
+      @previous_value = @first_value
+
+      @min_delta = 0
+      @bit_widths = Slice(UInt8).new(0)
+      @deltas = Slice(Int32).new(0, 0)
+
+      read_block
+    end
+
+    def values
+      values = Slice(Int32).new(@total_count, 0)
+      @total_count.times do |i|
+        values[i] = read_integer
+      end
+      values
+    end
+
+    def read_integer
+      check_read
+
+      @values_read += 1
+      return @first_value if @values_read == 1
+
+      read_deltas if @deltas.size == 0
+
+      value = @previous_value + @deltas[0]
+      @previous_value = value
+      @deltas += 1
+      value
+    end
+
+    def check_read
+      if all_read?
+        raise "All values read"
+      end
+    end
+
+    def all_read?
+      @values_read == @total_count
+    end
+
+    def read_block
+      @min_delta = DeltaEncoding.decode_zig_zag_var_int(@io).to_i
+      @bit_widths = Slice(UInt8).new(@mini_blocks)
+
+      @mini_blocks.times do |i|
+        @bit_widths[i] = @io.read_bytes(UInt8)
+      end
+    end
+
+    def read_deltas
+      read_block if @bit_widths.size == 0
+
+      packed = Slice(UInt32).new(@bit_widths[0].to_i, 0_u32)
+      @bit_widths[0].to_i.times do |i|
+        packed[i] = UInt32.from_io(@io, IO::ByteFormat::SystemEndian)
+      end
+
+      if @bit_widths[0] > 0
+        @deltas = BitPacking.unpack32values(packed, @bit_widths[0])
+      else
+        @deltas = Slice(Int32).new(32, 0)
+      end
+
+      @deltas.size.times do |i|
+        @deltas[i] = (@deltas[i] + @min_delta).to_i
+      end
+
+      @bit_widths += 1
+    end
   end
 end
