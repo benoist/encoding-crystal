@@ -20,7 +20,7 @@ end
 
 t = Time.now
 
-test_encode("increasing integers", 100000, Slice(Int32).new(1000) { |n| rand(1..(n+1)) })
+test_encode("increasing integers", 100000, Slice(Int32).new(1000) { |n| rand(1..(n + 1)) })
 test_encode("small integers", 100000, Slice(Int32).new(1000) { |n| 2 })
 test_encode("large integers", 100000, Slice(Int32).new(1000) { |n| 1 << 31 })
 

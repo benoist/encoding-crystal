@@ -25,7 +25,7 @@ end
 
 t = Time.now
 
-test_decode("increasing integers", 100000, Slice(Int32).new(1000) { |n| rand(1..(n+1)) })
+test_decode("increasing integers", 100000, Slice(Int32).new(1000) { |n| rand(1..(n + 1)) })
 test_decode("small integers", 100000, Slice(Int32).new(1000) { |n| 2 })
 test_decode("large integers", 100000, Slice(Int32).new(1000) { |n| 1 << 31 })
 
