@@ -7,10 +7,13 @@ Currently implemented is
 * Simple8b
 * ZigZag
 * VLQ
+* Delta encoding
+* Float encoding
+* BitPacking 32 values
+* BitPacking 64 values
 
 Roadmap
 
-* Delta encoding
 * Run length encoding
 * Dictionary encoding
 
