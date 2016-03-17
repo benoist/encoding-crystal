@@ -1,6 +1,14 @@
 class BitStream
   property :current_byte
 
+  def self.reader(io)
+    new(io, :read)
+  end
+
+  def self.writer(io)
+    new(io, :write)
+  end
+
   def initialize(@io, read_or_write)
     @current_byte = 0_u8
     @count = read_or_write == :read ? 0 : 8
@@ -38,9 +46,7 @@ class BitStream
     value = 0_u64
 
     while bits >= 8
-      byte = @io.read_byte.not_nil!
-
-      value = (value << 8) | byte
+      value = (value << 8) | read_byte
       bits -= 8
     end
 
@@ -95,5 +101,14 @@ class BitStream
 
   def flush(bit)
     @count.times { write_bit(bit) }
+  end
+
+  def to_s(io : IO)
+    io << "BitStream["
+    @io.to_slice.map(&.to_s(2).rjust(8, '0')).each do |bits|
+      io << bits
+    end
+    io << (@current_byte).to_s(2)
+    io << "]"
   end
 end
