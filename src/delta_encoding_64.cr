@@ -18,7 +18,7 @@ require "./vlq"
 require "./zig_zag"
 require "./bit_packing_64"
 
-module DeltaEncoding
+module DeltaEncoding64
   class InvalidHeader < Exception
   end
 
@@ -61,8 +61,8 @@ module DeltaEncoding
       @deltas = Slice(Int64).new(@block_size, 0_i64)
       @pos = 0
 
-      @first_value = 0
-      @previous_value = 0
+      @first_value = 0_i64
+      @previous_value = 0_i64
       @min_delta = Int64::MAX
     end
 
@@ -83,10 +83,16 @@ module DeltaEncoding
 
       @min_delta = {delta, @min_delta}.min
 
-      flush if @block_size == @pos
+      _flush if @block_size == @pos
     end
 
     def flush
+      extra_to_write = @block_size - @pos
+      extra_to_write.times { write_integer(@previous_value + @min_delta) }
+      @total_count -= extra_to_write
+    end
+
+    def _flush
       return if @pos == 0
 
       @pos.times do |i|
@@ -126,13 +132,13 @@ module DeltaEncoding
     end
 
     def write_min_delta
-      @blocks_buffer.write(DeltaEncoding.encode_zig_zag_var_int(@min_delta))
+      @blocks_buffer.write(DeltaEncoding64.encode_zig_zag_var_int(@min_delta))
     end
 
     def calculate_bit_widths_for_delta_block_buffer(mini_blocks_to_flush)
       mini_blocks_to_flush.times do |index|
         max = @deltas[index * @mini_block_size, @mini_block_size].max
-        @bit_widths[index] = DeltaEncoding.bits_required(max)
+        @bit_widths[index] = DeltaEncoding64.bits_required(max)
       end
     end
 
@@ -146,7 +152,7 @@ module DeltaEncoding
       io.write(VLQ.encode(@block_size))
       io.write(VLQ.encode(@mini_blocks))
       io.write(VLQ.encode(@total_count))
-      io.write(DeltaEncoding.encode_zig_zag_var_int(@first_value))
+      io.write(DeltaEncoding64.encode_zig_zag_var_int(@first_value))
 
       @blocks_buffer.rewind
       IO.copy(@blocks_buffer, io)
@@ -174,7 +180,7 @@ module DeltaEncoding
 
       @total_count = VLQ.decode(@io).to_i
       @values_read = 0
-      @first_value = DeltaEncoding.decode_zig_zag_var_int(@io).to_i
+      @first_value = DeltaEncoding64.decode_zig_zag_var_int(@io)
       @previous_value = @first_value
 
       @min_delta = 0
@@ -217,7 +223,7 @@ module DeltaEncoding
     end
 
     def read_block
-      @min_delta = DeltaEncoding.decode_zig_zag_var_int(@io).to_i
+      @min_delta = DeltaEncoding64.decode_zig_zag_var_int(@io)
       @bit_widths = Slice(UInt8).new(@mini_blocks)
 
       @mini_blocks.times do |i|
@@ -240,7 +246,7 @@ module DeltaEncoding
       end
 
       @deltas.size.times do |i|
-        @deltas[i] = (@deltas[i] + @min_delta).to_i
+        @deltas[i] = (@deltas[i] + @min_delta)
       end
 
       @bit_widths += 1

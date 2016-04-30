@@ -83,10 +83,16 @@ module DeltaEncoding
 
       @min_delta = {delta, @min_delta}.min
 
-      flush if @block_size == @pos
+      _flush if @block_size == @pos
     end
 
     def flush
+      extra_to_write = @block_size - @pos
+      extra_to_write.times { write_integer(@previous_value + @min_delta) }
+      @total_count -= extra_to_write
+    end
+
+    def _flush
       return if @pos == 0
 
       @pos.times do |i|
@@ -165,8 +171,8 @@ module DeltaEncoding
     getter :pos
 
     def initialize(@io)
-      @block_size = VLQ.decode(@io).to_i
-      @mini_blocks = VLQ.decode(@io).to_i
+      @block_size = VLQ.decode(@io)
+      @mini_blocks = VLQ.decode(@io)
 
       if @block_size == 0 || @mini_blocks == 0 || @block_size / @mini_blocks != 32
         raise InvalidHeader.new("Invalid header #{@block_size} #{@mini_blocks}")
@@ -217,7 +223,7 @@ module DeltaEncoding
     end
 
     def read_block
-      @min_delta = DeltaEncoding.decode_zig_zag_var_int(@io).to_i
+      @min_delta = DeltaEncoding.decode_zig_zag_var_int(@io)
       @bit_widths = Slice(UInt8).new(@mini_blocks)
 
       @mini_blocks.times do |i|

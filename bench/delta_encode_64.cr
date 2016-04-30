@@ -7,7 +7,7 @@ def test_encode(name, count, data)
   print name
   res = 0
   count.times do |i|
-    encoder = DeltaEncoding::Encoder.new
+    encoder = DeltaEncoding64::Encoder.new
     data.each do |integer|
       encoder.write_integer(integer)
     end
