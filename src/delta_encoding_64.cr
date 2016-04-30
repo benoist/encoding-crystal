@@ -179,7 +179,7 @@ module DeltaEncoding
 
       @min_delta = 0
       @bit_widths = Slice(UInt8).new(0)
-      @deltas = Slice(Int64).new(0, 0)
+      @deltas = Slice(Int64).new(0, 0_i64)
 
       read_block
     end
