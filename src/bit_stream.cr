@@ -83,7 +83,8 @@ class BitStream
     @current_byte = byte << @count
   end
 
-  def write_bits(value : UInt64, bits)
+  def write_bits(value, bits)
+    value = value.to_u64
     value <<= 64 - bits
 
     while bits >= 8

@@ -1,4 +1,4 @@
-require "../src/encoding/bit_packing_64"
+require "../src/bit_packing_64"
 
 $summary_umpacked = 0.to_u64
 

@@ -10,7 +10,7 @@ module Encoding
   end
 
   def self.leading_zeros(value)
-    count = 1_u64
+    count = 1_u8
 
     if (value >> 32) == 0
       count = count + 32
@@ -45,7 +45,7 @@ module Encoding
       return 64
     end
 
-    count = 0_u64
+    count = 0_u8
 
     if (value & 0x00000000FFFFFFFF) == 0
       count = count + 32

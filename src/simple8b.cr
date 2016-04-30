@@ -17,7 +17,7 @@
 #
 # Ported from https://github.com/jwilder/encoding
 
-require "../encoding/simple8b/*"
+require "./simple8b/*"
 
 module Simple8b
   class Error < Exception

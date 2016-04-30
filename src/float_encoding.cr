@@ -1,3 +1,5 @@
+require "./bit_stream"
+
 module FloatEncoding
   class Encoder
     getter :leading
@@ -39,19 +41,20 @@ module FloatEncoding
         leading = Encoding.leading_zeros(delta)
         trailing = Encoding.trailing_zeros(delta)
 
+
         leading &= 0x1F
         leading = 31_u64 if leading == 32
 
-        if @leading != 0_u64 && leading >= @leading && trailing >= @trailing
+        if @leading != 0_u8 && leading >= @leading && trailing >= @trailing
           @bit_stream.write_bit(false)
-          @bit_stream.write_bits(delta >> @trailing, 64 - @leading - @trailing)
+          @bit_stream.write_bits(delta >> @trailing, 64_u8 - @leading - @trailing)
         else
           @leading, @trailing = leading, trailing
 
           @bit_stream.write_bit(true)
           @bit_stream.write_bits(leading, 5)
 
-          sigbits = 64_u64 - leading - trailing
+          sigbits = 64_u8 - leading - trailing
           @bit_stream.write_bits(sigbits, 6)
           @bit_stream.write_bits(delta >> trailing, sigbits)
         end

@@ -16,7 +16,7 @@
 
 require "./vlq"
 require "./zig_zag"
-require "../encoding/bit_packing"
+require "./bit_packing"
 
 module DeltaEncoding
   class InvalidHeader < Exception

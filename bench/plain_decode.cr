@@ -1,4 +1,4 @@
-require "../src/encoding/simple8b"
+require "../src/simple8b"
 
 $summary_umpacked = 0.to_u64
 

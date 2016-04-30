@@ -1,4 +1,4 @@
-require "../src/encoding/simple8b"
+require "../src/simple8b"
 
 $summary_packed = 0.to_u64
 
@@ -17,10 +17,10 @@ end
 
 t = Time.now
 
-test_encode("increasing integers", 10000, Slice(UInt64).new(1000) { |n| n.to_u64 })
-test_encode("small integers", 100000, Slice(UInt64).new(1000) { |n| 2.to_u64 })
-test_encode("large integers", 10000, Slice(UInt64).new(1000) { |n| 1_u64 << 31 })
-test_encode("timestamps", 10000, Slice(UInt64).new(1000) { |n| t.epoch.to_u64 })
+test_encode("increasing integers", 100_000_000 / 32, Slice(UInt64).new(32) { |n| n.to_u64 })
+test_encode("small integers", 100_000_000 / 32, Slice(UInt64).new(32) { |n| 1.to_u64 })
+test_encode("large integers", 100_000_000 / 32, Slice(UInt64).new(32) { |n| 1_u64 << 31 })
+test_encode("timestamps", 100_000_000 / 32, Slice(UInt64).new(32) { |n| t.epoch.to_u64 })
 
 puts "Summary packed size: #{$summary_packed / 1024 / 1024} Mb"
 puts "Summary time: #{Time.now - t}"

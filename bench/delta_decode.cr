@@ -1,4 +1,4 @@
-require "../src/encoding/delta_encoding"
+require "../src/delta_encoding"
 
 $summary_umpacked = 0.to_u64
 

@@ -1,4 +1,4 @@
-require "../src/delta_encoding"
+require "../src/delta_encoding_64"
 
 $summary_packed = 0.to_u64
 
@@ -20,12 +20,12 @@ end
 
 t = Time.now
 
-test_encode("increasing integers", 100000, Slice(Int32).new(1000) { |n| rand(1..(n + 1)) })
-test_encode("small integers", 100000, Slice(Int32).new(1000) { |n| 2 })
-test_encode("large integers", 100000, Slice(Int32).new(1000) { |n| 1 << 31 })
+test_encode("increasing integers", 100000, Slice(Int64).new(1000) { |n| rand(1..(n + 1)).to_i64 })
+test_encode("small integers", 100000, Slice(Int64).new(1000) { |n| 2_i64 })
+test_encode("large integers", 100000, Slice(Int64).new(1000) { |n| 1_i64 << 31 })
 
-test_encode("random integers", 100000, Slice(Int32).new(1000) { |n| rand(1..12345) })
-test_encode("timestamps", 100000, Slice(Int32).new(1000) { |n| t.epoch.to_i })
+test_encode("random integers", 100000, Slice(Int64).new(1000) { |n| rand(1..12345).to_i64 })
+test_encode("timestamps", 100000, Slice(Int64).new(1000) { |n| t.epoch.to_i64 })
 
 puts "Summary packed size: #{$summary_packed / 1024 / 1024} Mb"
 puts "Summary time: #{Time.now - t}"
