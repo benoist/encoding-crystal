@@ -19,20 +19,20 @@ end
 
 def test_bitstream(name, count, bit_width, data)
   t = Time.now
-    print name
-    res = 0
-    values_written = 0.to_i64
-    count.times do |i|
-      io = MemoryIO.new
-      writer = BitStream.writer(io)
-      data.each do |value|
-        writer.write_bits(value, bit_width)
-      end
-      values_written += data.size
-      res += io.size
+  print name
+  res = 0
+  values_written = 0.to_i64
+  count.times do |i|
+    io = MemoryIO.new
+    writer = BitStream.writer(io)
+    data.each do |value|
+      writer.write_bits(value, bit_width)
     end
-    puts " = #{values_written} values taking #{res / 1024 / 1024} Mb, #{Time.now - t}"
-    $summary_packed += res
+    values_written += data.size
+    res += io.size
+  end
+  puts " = #{values_written} values taking #{res / 1024 / 1024} Mb, #{Time.now - t}"
+  $summary_packed += res
 end
 
 t = Time.now

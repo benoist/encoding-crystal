@@ -41,7 +41,7 @@ module Simple8b
       new(MemoryIO.new)
     end
 
-    def initialize(@io)
+    def initialize(@io : MemoryIO)
       @buffer = Slice(UInt64).new(240)
       @pos = 0
     end
@@ -132,7 +132,7 @@ module Simple8b
   class Decoder
     include Unpack
 
-    def initialize(@io)
+    def initialize(@io : MemoryIO)
       @buffer = Slice(UInt64).new(0)
     end
 

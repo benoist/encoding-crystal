@@ -9,8 +9,8 @@ module FloatEncoding
     getter? :finished
 
     def initialize(io)
-      @leading = 0_u64
-      @trailing = 0_u64
+      @leading = 0_u8
+      @trailing = 0_u8
       @first = true
       @previous_value = 0_f64
       @bit_stream = BitStream.writer(io)
@@ -41,9 +41,8 @@ module FloatEncoding
         leading = Encoding.leading_zeros(delta)
         trailing = Encoding.trailing_zeros(delta)
 
-
         leading &= 0x1F
-        leading = 31_u64 if leading == 32
+        leading = 31_u8 if leading == 32
 
         if @leading != 0_u8 && leading >= @leading && trailing >= @trailing
           @bit_stream.write_bit(false)
@@ -72,9 +71,11 @@ module FloatEncoding
   end
 
   class Decoder
-    def initialize(@io)
-      @leading = 0_u64
-      @trailing = 0_u64
+    @val : Float64
+
+    def initialize(@io : IO)
+      @leading = 0_u8
+      @trailing = 0_u8
       @first = true
       @bit_stream = BitStream.reader(@io)
 
@@ -98,15 +99,15 @@ module FloatEncoding
 
       if @bit_stream.read_bit   # return true if the value has changed
         if @bit_stream.read_bit # returns true if the leading and trailing zeros have changed
-          @leading = @bit_stream.read_bits(5)
+          @leading = @bit_stream.read_bits(5).to_u8
 
           sigbits = @bit_stream.read_bits(6)
           # 0 significant bits here means we overflowed and we actually need 64; see comment in encoder
-          sigbits = 64 if sigbits == 0
-          @trailing = 64 - @leading - sigbits
+          sigbits = 64_u8 if sigbits == 0
+          @trailing = 64_u8 - @leading - sigbits
         end
 
-        sigbits = 64 - @leading - @trailing
+        sigbits = 64_u8 - @leading - @trailing
         bits = @bit_stream.read_bits(sigbits)
         value_bits = Encoding.float64bits(@val) ^ (bits << @trailing)
 

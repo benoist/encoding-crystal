@@ -43,14 +43,16 @@ module DeltaEncoding64
   class Encoder
     MAX_BITWIDTH = 64
 
-    getter :first_value
-    getter :previous_value
-    getter :bit_widths
-    getter :total_count
-    getter :min_delta
-    getter :deltas
-    getter :pos
-    getter :blocks_buffer
+    getter first_value : Int64
+    getter previous_value : Int64
+    getter bit_widths : Slice(UInt8)
+    getter total_count : Int32
+    getter min_delta : Int64
+    getter deltas : Slice(Int64)
+    getter pos : Int32
+    getter blocks_buffer : MemoryIO
+
+    @mini_block_size : Int32
 
     def initialize(@block_size = 256, @mini_blocks = 4)
       @mini_block_size = @block_size / @mini_blocks
@@ -160,17 +162,16 @@ module DeltaEncoding64
   end
 
   class Decoder
-    getter :block_size
-    getter :mini_blocks
-    getter :first_value
-    getter :previous_value
-    getter :bit_widths
-    getter :total_count
-    getter :min_delta
-    getter :deltas
-    getter :pos
+    getter block_size : Int32
+    getter mini_blocks : Int32
+    getter first_value : Int64
+    getter previous_value : Int64
+    getter bit_widths : Slice(UInt8)
+    getter total_count : Int32
+    getter min_delta : Int64
+    getter deltas : Slice(Int64)
 
-    def initialize(@io)
+    def initialize(@io : IO)
       @block_size = VLQ.decode(@io).to_i
       @mini_blocks = VLQ.decode(@io).to_i
 
@@ -183,7 +184,7 @@ module DeltaEncoding64
       @first_value = DeltaEncoding64.decode_zig_zag_var_int(@io)
       @previous_value = @first_value
 
-      @min_delta = 0
+      @min_delta = 0_i64
       @bit_widths = Slice(UInt8).new(0)
       @deltas = Slice(Int64).new(0, 0_i64)
 

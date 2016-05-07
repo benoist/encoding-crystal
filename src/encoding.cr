@@ -42,7 +42,7 @@ module Encoding
 
   def self.trailing_zeros(value)
     if value == 0
-      return 64
+      return 64_u8
     end
 
     count = 0_u8

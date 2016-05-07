@@ -43,14 +43,16 @@ module DeltaEncoding
   class Encoder
     MAX_BITWIDTH = 32
 
-    getter :first_value
-    getter :previous_value
-    getter :bit_widths
-    getter :total_count
-    getter :min_delta
-    getter :deltas
-    getter :pos
-    getter :blocks_buffer
+    getter first_value : Int32
+    getter previous_value : Int32
+    getter bit_widths : Slice(UInt8)
+    getter total_count : Int32
+    getter min_delta : Int32
+    getter deltas : Slice(Int32)
+    getter pos : Int32
+    getter blocks_buffer : MemoryIO
+
+    @mini_block_size : Int32
 
     def initialize(@block_size = 128, @mini_blocks = 4)
       @mini_block_size = @block_size / @mini_blocks
@@ -160,19 +162,20 @@ module DeltaEncoding
   end
 
   class Decoder
-    getter :block_size
-    getter :mini_blocks
-    getter :first_value
-    getter :previous_value
-    getter :bit_widths
-    getter :total_count
-    getter :min_delta
-    getter :deltas
-    getter :pos
+    getter block_size : Int32
+    getter mini_blocks : Int32
+    getter first_value : Int32
+    getter previous_value : Int32
+    getter bit_widths : Slice(UInt8)
+    getter total_count : Int32
+    getter min_delta : Int32
+    getter deltas : Slice(Int32)
 
-    def initialize(@io)
-      @block_size = VLQ.decode(@io)
-      @mini_blocks = VLQ.decode(@io)
+    # getter pos : Int32
+
+    def initialize(@io : IO)
+      @block_size = VLQ.decode(@io).to_i
+      @mini_blocks = VLQ.decode(@io).to_i
 
       if @block_size == 0 || @mini_blocks == 0 || @block_size / @mini_blocks != 32
         raise InvalidHeader.new("Invalid header #{@block_size} #{@mini_blocks}")

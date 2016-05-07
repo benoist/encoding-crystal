@@ -13,6 +13,6 @@ describe DeltaEncoding64 do
     io.rewind
     decoder = DeltaEncoding64::Decoder.new(io)
 
-    decoder.values.to_a.should eq [0,1,2,3]
+    decoder.values.to_a.should eq [0, 1, 2, 3]
   end
 end

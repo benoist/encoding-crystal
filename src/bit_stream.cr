@@ -9,7 +9,7 @@ class BitStream
     new(io, :write)
   end
 
-  def initialize(@io, read_or_write)
+  def initialize(@io : IO, read_or_write)
     @current_byte = 0_u8
     @count = read_or_write == :read ? 0 : 8
   end
