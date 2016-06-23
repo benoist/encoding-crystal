@@ -89,7 +89,8 @@ module DeltaEncoding64
     end
 
     def flush
-      extra_to_write = @block_size - @pos
+      return if @pos == 0
+      extra_to_write = (@block_size - @pos)
       extra_to_write.times { write_integer(@previous_value + @min_delta) }
       @total_count -= extra_to_write
     end

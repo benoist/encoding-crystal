@@ -1,11 +1,11 @@
 module Encoding
   def self.float64bits(value)
-    p = pointerof(value) as UInt64*
+    p = pointerof(value).as(UInt64*)
     p[0]
   end
 
   def self.float64frombits(bits)
-    p = pointerof(bits) as Float64*
+    p = pointerof(bits).as(Float64*)
     p[0]
   end
 
