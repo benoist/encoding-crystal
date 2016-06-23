@@ -189,7 +189,7 @@ module DeltaEncoding64
       @bit_widths = Slice(UInt8).new(0)
       @deltas = Slice(Int64).new(0, 0_i64)
 
-      read_block
+      read_block if @total_count > 1
     end
 
     def values
