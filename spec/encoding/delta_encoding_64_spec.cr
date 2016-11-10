@@ -45,4 +45,21 @@ describe DeltaEncoding64 do
 
     io.pos.should eq io.size
   end
+
+  it "when integers are far apart" do
+    integers = Slice[Int64::MAX, Int64::MIN, 0_i64]
+
+    encoder = DeltaEncoding64::Encoder.new
+    integers.each do |integer|
+      encoder.write_integer(integer)
+    end
+    encoder.flush
+
+    io = MemoryIO.new
+    encoder.to_io(io)
+    io.rewind
+
+    decoder = DeltaEncoding64::Decoder.new(io)
+    decoder.values.should eq integers
+  end
 end

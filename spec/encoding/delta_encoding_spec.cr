@@ -46,10 +46,12 @@ describe DeltaEncoding do
     io.pos.should eq io.size
   end
 
-  it "bug with specific array" do
+  it "when integers are far apart" do
+    integers = Slice[Int32::MAX, Int32::MIN, 0]
+
     encoder = DeltaEncoding::Encoder.new
-    129.times do |i|
-      encoder.write_integer(rand(1466666000))
+    integers.each do |integer|
+      encoder.write_integer(integer)
     end
     encoder.flush
 
@@ -58,8 +60,6 @@ describe DeltaEncoding do
     io.rewind
 
     decoder = DeltaEncoding::Decoder.new(io)
-    decoder.values.size.should eq 129
-
-    io.pos.should eq io.size
+    decoder.values.should eq integers
   end
 end

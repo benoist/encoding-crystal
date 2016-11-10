@@ -33,9 +33,16 @@ module DeltaEncoding
   def self.bits_required(value)
     bits_required = 0_u8
     sample = value
-    while sample > 0
-      sample >>= 1
-      bits_required += 1
+    if sample > 0
+      while sample > 0 && bits_required < 32
+        sample >>= 1
+        bits_required += 1
+      end
+    else
+      while sample < 0 && bits_required < 32
+              sample >>= 1
+              bits_required += 1
+      end
     end
     bits_required
   end
@@ -91,7 +98,7 @@ module DeltaEncoding
     def flush
       return if @pos == 0
       extra_to_write = @block_size - @pos
-      extra_to_write.times { write_integer(@previous_value + @min_delta) }
+      extra_to_write.times { write_integer(0) }
       @total_count -= extra_to_write
     end
 
@@ -140,8 +147,8 @@ module DeltaEncoding
 
     def calculate_bit_widths_for_delta_block_buffer(mini_blocks_to_flush)
       mini_blocks_to_flush.times do |index|
-        max = @deltas[index * @mini_block_size, @mini_block_size].max
-        @bit_widths[index] = DeltaEncoding.bits_required(max)
+        max = @deltas[index * @mini_block_size, @mini_block_size].map { |delta| DeltaEncoding.bits_required(delta) }.max
+        @bit_widths[index] = max
       end
     end
 
