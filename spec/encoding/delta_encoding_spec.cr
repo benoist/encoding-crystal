@@ -40,7 +40,24 @@ describe DeltaEncoding do
     encoder.to_io(io)
     io.rewind
 
-    decoder   = DeltaEncoding::Decoder.new(io)
+    decoder = DeltaEncoding::Decoder.new(io)
+    decoder.values.size.should eq 129
+
+    io.pos.should eq io.size
+  end
+
+  it "bug with specific array" do
+    encoder = DeltaEncoding::Encoder.new
+    129.times do |i|
+      encoder.write_integer(rand(1466666000))
+    end
+    encoder.flush
+
+    io = MemoryIO.new
+    encoder.to_io(io)
+    io.rewind
+
+    decoder = DeltaEncoding::Decoder.new(io)
     decoder.values.size.should eq 129
 
     io.pos.should eq io.size
