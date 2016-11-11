@@ -40,8 +40,8 @@ module DeltaEncoding
       end
     else
       while sample < 0 && bits_required < 32
-              sample >>= 1
-              bits_required += 1
+        sample >>= 1
+        bits_required += 1
       end
     end
     bits_required
@@ -98,7 +98,7 @@ module DeltaEncoding
     def flush
       return if @pos == 0
       extra_to_write = @block_size - @pos
-      extra_to_write.times { write_integer(0) }
+      extra_to_write.times { write_integer(@previous_value + @min_delta) }
       @total_count -= extra_to_write
     end
 
@@ -206,6 +206,7 @@ module DeltaEncoding
       @total_count.times do |i|
         values[i] = read_integer
       end
+      flush
       values
     end
 
@@ -239,6 +240,16 @@ module DeltaEncoding
 
       @mini_blocks.times do |i|
         @bit_widths[i] = @io.read_bytes(UInt8)
+      end
+    end
+
+    def flush
+      @bit_widths.each do |bit_width|
+        bit_width = bit_width.to_i
+        packed = Slice(UInt32).new(bit_width, 0_u32)
+        bit_width.times do |i|
+          packed[i] = UInt32.from_io(@io, IO::ByteFormat::SystemEndian)
+        end
       end
     end
 

@@ -46,11 +46,11 @@ describe DeltaEncoding64 do
     io.pos.should eq io.size
   end
 
-  it "when integers are far apart" do
-    integers = Slice[Int64::MAX, Int64::MIN, 0_i64]
+  it "with a negative delta" do
+    wide_range = Slice[Int64::MAX, Int64::MIN, 0_i64]
 
     encoder = DeltaEncoding64::Encoder.new
-    integers.each do |integer|
+    wide_range.each do |integer|
       encoder.write_integer(integer)
     end
     encoder.flush
@@ -60,6 +60,6 @@ describe DeltaEncoding64 do
     io.rewind
 
     decoder = DeltaEncoding64::Decoder.new(io)
-    decoder.values.should eq integers
+    decoder.values.should eq wide_range
   end
 end

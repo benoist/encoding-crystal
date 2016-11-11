@@ -34,7 +34,7 @@ module DeltaEncoding64
     bits_required = 0_u8
     sample = value
     if sample > 0
-      while sample > 0  && bits_required < 64
+      while sample > 0 && bits_required < 64
         sample >>= 1
         bits_required += 1
       end
@@ -204,6 +204,7 @@ module DeltaEncoding64
       @total_count.times do |i|
         values[i] = read_integer
       end
+      flush
       values
     end
 
@@ -237,6 +238,16 @@ module DeltaEncoding64
 
       @mini_blocks.times do |i|
         @bit_widths[i] = @io.read_bytes(UInt8)
+      end
+    end
+
+    def flush
+      @bit_widths.each do |bit_width|
+        bit_width = bit_width.to_i
+        packed = Slice(UInt64).new(bit_width, 0_u64)
+        bit_width.times do |i|
+          packed[i] = UInt64.from_io(@io, IO::ByteFormat::SystemEndian)
+        end
       end
     end
 
