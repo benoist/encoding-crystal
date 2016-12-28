@@ -35,7 +35,7 @@ dependencies:
 ```crystal
 require "encoding/simple8b"
 
-io = MemoryIO.new
+io = IO::Memory.new
 encoder = Simple8b::Encoder.new(io)
 
 # just 1 unsigned int
@@ -53,7 +53,7 @@ io.to_slice
 ### Decoding
 
 ```crystal
-io = MemoryIO.new
+io = IO::Memory.new
 io.write_bytes(3458764513820540927_u64, IO::ByteFormat::BigEndian)
 io.rewind
 decoder = Simple8b::Decoder.new(io)

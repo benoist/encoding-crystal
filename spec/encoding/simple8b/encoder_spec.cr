@@ -8,7 +8,7 @@ describe Simple8b::Encoder do
       encoder.flush
       slice = encoder.bytes
 
-      io = MemoryIO.new(slice)
+      io = IO::Memory.new(slice)
       io.read_bytes(UInt64, IO::ByteFormat::BigEndian).should eq 2305843009213693953_u64
     end
 
@@ -18,7 +18,7 @@ describe Simple8b::Encoder do
       encoder.flush
       slice = encoder.bytes
 
-      io = MemoryIO.new(slice)
+      io = IO::Memory.new(slice)
       io.read_bytes(UInt64, IO::ByteFormat::BigEndian).should eq 3458764513820540927_u64
     end
   end

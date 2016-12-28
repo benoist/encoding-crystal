@@ -38,10 +38,10 @@ module Simple8b
     getter :buffer
 
     def self.new
-      new(MemoryIO.new)
+      new(IO::Memory.new)
     end
 
-    def initialize(@io : MemoryIO)
+    def initialize(@io : IO::Memory)
       @buffer = Slice(UInt64).new(240)
       @pos = 0
     end
@@ -132,7 +132,7 @@ module Simple8b
   class Decoder
     include Unpack
 
-    def initialize(@io : MemoryIO)
+    def initialize(@io : IO::Memory)
       @buffer = Slice(UInt64).new(0)
     end
 

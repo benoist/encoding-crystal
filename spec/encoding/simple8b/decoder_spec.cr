@@ -2,7 +2,7 @@ require "../../spec_helper"
 
 describe Simple8b::Decoder do
   context "decode" do
-    decoder = Simple8b::Decoder.new(MemoryIO.new)
+    decoder = Simple8b::Decoder.new(IO::Memory.new)
     it "decodes ints using 1 bits with max value #{(1_u64 << 1) - 1}" do
       decoder.decode((2_u64 << 60 | (1_u64 << 60) - 1)).should eq({Slice(UInt64).new(60, (1_u64 << 1) - 1), 60})
     end
@@ -62,7 +62,7 @@ describe Simple8b::Decoder do
 
   context "read" do
     it "reads an integer from the io" do
-      io = MemoryIO.new
+      io = IO::Memory.new
       io.write_bytes(3458764513820540927_u64, IO::ByteFormat::BigEndian)
       io.rewind
       decoder = Simple8b::Decoder.new(io)
@@ -71,7 +71,7 @@ describe Simple8b::Decoder do
     end
 
     it "reads a slice of integers from the io" do
-      io = MemoryIO.new
+      io = IO::Memory.new
       io.write_bytes(3458764513820540927_u64, IO::ByteFormat::BigEndian)
       io.rewind
       decoder = Simple8b::Decoder.new(io)
@@ -82,7 +82,7 @@ describe Simple8b::Decoder do
 
   context "has_more?" do
     it "return true if the io contains more bytes" do
-      io = MemoryIO.new
+      io = IO::Memory.new
       io.write_bytes(3458764513820540927_u64, IO::ByteFormat::BigEndian)
       io.rewind
       decoder = Simple8b::Decoder.new(io)
@@ -90,7 +90,7 @@ describe Simple8b::Decoder do
     end
 
     it "return true if the buffer contains more integers" do
-      io = MemoryIO.new
+      io = IO::Memory.new
       io.write_bytes(3458764513820540927_u64, IO::ByteFormat::BigEndian)
       io.rewind
       decoder = Simple8b::Decoder.new(io)
@@ -99,7 +99,7 @@ describe Simple8b::Decoder do
     end
 
     it "returns false if the io and buffer are empty" do
-      io = MemoryIO.new
+      io = IO::Memory.new
       io.write_bytes(3458764513820540927_u64, IO::ByteFormat::BigEndian)
       io.rewind
       decoder = Simple8b::Decoder.new(io)

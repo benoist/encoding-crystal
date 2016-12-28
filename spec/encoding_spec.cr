@@ -24,7 +24,7 @@ describe Encoding do
     end
     integer_encoder.flush
 
-    io = MemoryIO.new
+    io = IO::Memory.new
     timestamp_encoder.to_io(io)
     uuid_encoder.to_io(io)
     integer_encoder.to_io(io)

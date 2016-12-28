@@ -8,7 +8,7 @@ describe DeltaEncoding do
     end
     encoder.flush
 
-    io = MemoryIO.new
+    io = IO::Memory.new
     encoder.to_io(io)
     io.rewind
     decoder = DeltaEncoding::Decoder.new(io)
@@ -21,7 +21,7 @@ describe DeltaEncoding do
     encoder.write_integer(1)
     encoder.flush
 
-    io = MemoryIO.new
+    io = IO::Memory.new
     encoder.to_io(io)
     io.rewind
     decoder = DeltaEncoding::Decoder.new(io)
@@ -36,7 +36,7 @@ describe DeltaEncoding do
     end
     encoder.flush
 
-    io = MemoryIO.new
+    io = IO::Memory.new
     encoder.to_io(io)
     io.rewind
 
@@ -55,7 +55,7 @@ describe DeltaEncoding do
     end
     encoder.flush
 
-    io = MemoryIO.new
+    io = IO::Memory.new
     encoder.to_io(io)
     io.rewind
 

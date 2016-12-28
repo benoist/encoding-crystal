@@ -17,7 +17,7 @@ module VLQ # Variable-length quantity https://en.wikipedia.org/wiki/Variable-len
   end
 
   def self.decode(slice : Slice(UInt8))
-    decode(MemoryIO.new(slice))
+    decode(IO::Memory.new(slice))
   end
 
   def self.decode(io : IO)

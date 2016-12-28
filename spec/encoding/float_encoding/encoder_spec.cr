@@ -1,6 +1,6 @@
 require "../../spec_helper"
 
-def new_encoder(io = MemoryIO.new)
+def new_encoder(io = IO::Memory.new)
   encoder = FloatEncoding::Encoder.new(io)
 end
 
@@ -34,7 +34,7 @@ describe FloatEncoding::Encoder do
     end
 
     it "write the bits to the bit_stream" do
-      io = MemoryIO.new
+      io = IO::Memory.new
       encoder = new_encoder(io)
       encoder.push(1)
       io.rewind
@@ -46,7 +46,7 @@ describe FloatEncoding::Encoder do
   context "push the next value" do
     context "when value matches the previous" do
       it "writes a zero bit to the bit stream" do
-        io = MemoryIO.new
+        io = IO::Memory.new
         encoder = new_encoder(io)
         encoder.push(1)
         encoder.push(1)
@@ -60,7 +60,7 @@ describe FloatEncoding::Encoder do
 
     context "when value does not match" do
       it "writes the required bits to the bit stream" do
-        io = MemoryIO.new
+        io = IO::Memory.new
         encoder = new_encoder(io)
         encoder.push(1)
         encoder.push(2)

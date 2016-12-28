@@ -1,7 +1,7 @@
 require "../../spec_helper"
 
 def new_decoder(values = [1, 2])
-  io = MemoryIO.new
+  io = IO::Memory.new
   encoder = FloatEncoding::Encoder.new(io)
   values.each do |value|
     encoder.push(value)

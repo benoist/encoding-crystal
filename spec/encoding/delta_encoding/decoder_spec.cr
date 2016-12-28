@@ -7,7 +7,7 @@ def encoded
     encoder.write_integer(i)
   end
 
-  io = MemoryIO.new
+  io = IO::Memory.new
   encoder.to_io(io)
   io.rewind
   io

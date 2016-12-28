@@ -57,13 +57,13 @@ module DeltaEncoding64
     getter min_delta : Int64
     getter deltas : Slice(Int64)
     getter pos : Int32
-    getter blocks_buffer : MemoryIO
+    getter blocks_buffer : IO::Memory
 
     @mini_block_size : Int32
 
     def initialize(@block_size = 256, @mini_blocks = 4)
       @mini_block_size = @block_size / @mini_blocks
-      @blocks_buffer = MemoryIO.new
+      @blocks_buffer = IO::Memory.new
       @bit_widths = Slice(UInt8).new(4, 0_u8)
       @total_count = 0
 
@@ -153,7 +153,7 @@ module DeltaEncoding64
     end
 
     def bytes
-      io = MemoryIO.new
+      io = IO::Memory.new
       to_io(io)
       io.to_slice
     end

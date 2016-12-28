@@ -2,7 +2,7 @@ require "../../spec_helper"
 
 describe Simple8b::Decoder do
   context "unpack" do
-    decoder = Simple8b::Decoder.new(MemoryIO.new)
+    decoder = Simple8b::Decoder.new(IO::Memory.new)
 
     it "packs 240 ints using 0 bits each" do
       decoder.unpack240(0_u64).should eq Slice(UInt64).new(240, 1_u64)

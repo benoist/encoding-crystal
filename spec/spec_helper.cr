@@ -1,6 +1,6 @@
 require "spec"
 
-def as_slice(array : Array(T))
+def as_slice(array : Array(T)) forall T
   Slice(T).new(array.to_unsafe, array.size)
 end
 
