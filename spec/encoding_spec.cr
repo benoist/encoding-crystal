@@ -2,9 +2,9 @@ require "./spec_helper"
 
 describe Encoding do
   it "can write multiple decoded bytes to an IO" do
-    timestamps = Slice[0_i64, 0_i64, 86400_i64, 86400_i64]
-    uuids = Slice[394360224, -833431868, -1972139552, 792205646]
-    integers = Slice[394360224_i64, -833431868_i64, -1972139552_i64, 792205646_i64]
+    timestamps = [0_i64, 0_i64, 86400_i64, 86400_i64]
+    uuids = [394360224, -833431868, -1972139552, 792205646]
+    integers = [394360224_i64, -833431868_i64, -1972139552_i64, 792205646_i64]
 
     timestamp_encoder = DeltaEncoding64::Encoder.new
     timestamps.each do |timestamp|

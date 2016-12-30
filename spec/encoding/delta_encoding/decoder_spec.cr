@@ -39,7 +39,7 @@ describe DeltaEncoding::Decoder do
   context "values" do
     it "returns a slice with all values" do
       decoder = DeltaEncoding::Decoder.new(encoded)
-      decoder.values.should eq Slice(Int32).new(257) { |i| i == 0 ? 0 : i == 1 ? -1 : i - 2 }
+      decoder.values.should eq Array(Int32).new(257) { |i| i == 0 ? 0 : i == 1 ? -1 : i - 2 }
     end
   end
 end

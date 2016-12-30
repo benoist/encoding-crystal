@@ -200,7 +200,7 @@ module DeltaEncoding64
     end
 
     def values
-      values = Slice(Int64).new(@total_count, 0_i64)
+      values = Array(Int64).new(@total_count, 0_i64)
       @total_count.times do |i|
         values[i] = read_integer
       end

@@ -47,7 +47,7 @@ describe DeltaEncoding64 do
   end
 
   it "with a negative delta" do
-    wide_range = Slice[Int64::MAX, Int64::MIN, 0_i64]
+    wide_range = [Int64::MAX, Int64::MIN, 0_i64]
 
     encoder = DeltaEncoding64::Encoder.new
     wide_range.each do |integer|
